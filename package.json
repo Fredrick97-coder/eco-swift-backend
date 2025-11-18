@@ -5,7 +5,7 @@
   "main": "public/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "tsc",
+    "build": "tsc && mkdir -p public/schema && cp src/schema/*.graphql public/schema/",
     "start": "node public/index.js",
     "codegen": "graphql-codegen --config codegen.yml",
     "codegen:watch": "graphql-codegen --config codegen.yml --watch",
