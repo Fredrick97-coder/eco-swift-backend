@@ -5,7 +5,7 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/use/ws';
 import { execute, subscribe } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { ApolloServerPluginDrainHttpServer } from 'apollo-server-core';
+import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
@@ -194,6 +194,24 @@ export const startServer = async () => {
     // Create Apollo Server with subscription support
     const server = new ApolloServer({
       schema,
+      introspection: true, // Enable GraphQL introspection (required for GraphQL Playground)
+      plugins: [
+        // Only use drain plugin when not on Vercel (Vercel doesn't use httpServer.listen)
+        ...(isVercel || !httpServer ? [] : [ApolloServerPluginDrainHttpServer({ httpServer })]),
+        // Enable GraphQL Playground
+        ApolloServerPluginLandingPageGraphQLPlayground(),
+        {
+          async serverWillStart() {
+            return {
+              async drainServer() {
+                if (serverCleanup) {
+                  await serverCleanup.dispose();
+                }
+              },
+            };
+          },
+        },
+      ],
       context: ({ req }: any) => {
         // For HTTP requests
         if (req) {
@@ -257,21 +275,6 @@ export const startServer = async () => {
           },
         };
       },
-      plugins: [
-        // Only use drain plugin when not on Vercel (Vercel doesn't use httpServer.listen)
-        ...(isVercel || !httpServer ? [] : [ApolloServerPluginDrainHttpServer({ httpServer })]),
-        {
-          async serverWillStart() {
-            return {
-              async drainServer() {
-                if (serverCleanup) {
-                  await serverCleanup.dispose();
-                }
-              },
-            };
-          },
-        },
-      ],
     });
 
     await server.start();
