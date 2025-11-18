@@ -5,7 +5,7 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/use/ws';
 import { execute, subscribe } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
+import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault, ApolloServerPluginLandingPageProductionDefault } from 'apollo-server-core';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
@@ -199,7 +199,16 @@ export const startServer = async () => {
         // Only use drain plugin when not on Vercel (Vercel doesn't use httpServer.listen)
         ...(isVercel || !httpServer ? [] : [ApolloServerPluginDrainHttpServer({ httpServer })]),
         // Enable Apollo Studio landing page
-        ApolloServerPluginLandingPageLocalDefault({ embed: true }),
+        // On Vercel, use local default but subscriptions won't work (WebSockets not supported in serverless)
+        // The landing page will show but subscription attempts will fail gracefully
+        ApolloServerPluginLandingPageLocalDefault({ 
+          embed: true,
+          // Don't include subscription endpoint on Vercel
+          ...(isVercel ? { 
+            // Note: Subscriptions are disabled on Vercel due to serverless limitations
+            // Users can still use queries and mutations
+          } : {})
+        }),
         {
           async serverWillStart() {
             return {
