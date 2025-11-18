@@ -33,9 +33,19 @@ Set these in **Vercel → Project → Settings → Environment Variables** (prev
 | `MONGODB_URI` | MongoDB connection string |
 | `JWT_SECRET` | Signing secret (min 32 chars) |
 | `JWT_EXPIRES_IN` | Token lifetime (e.g. `7d`) |
-| `FRONTEND_URL` | Allowed origin for CORS (https://eco-swift.example.com) |
+| `FRONTEND_URL` | **Required in production** - Allowed origin for CORS (e.g. `https://eco-swift.vercel.app`) |
 | `NODE_ENV` | `production` |
 | `PORT` | Optional (Vercel ignores, but keeps code paths consistent) |
+
+### CORS Configuration
+
+The backend includes comprehensive CORS settings:
+
+- **Development**: Allows all origins (localhost, 127.0.0.1, etc.)
+- **Production**: Only allows origins specified in `FRONTEND_URL` environment variable
+- **Apollo Studio**: Always allowed for GraphQL introspection
+- **Credentials**: Enabled for authenticated requests
+- **Headers**: Supports standard GraphQL and Apollo Client headers
 
 > Add any other variables you use locally (e.g. notification keys, email providers).
 

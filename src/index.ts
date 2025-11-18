@@ -26,8 +26,62 @@ type ServerCleanup = {
 
 let serverCleanup: ServerCleanup | null = null;
 
+// CORS configuration
+const NODE_ENV = process.env.NODE_ENV || 'development';
+const corsOptions: cors.CorsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Always allow Apollo Studio origins
+    const apolloStudioOrigins = [
+      'https://studio.apollographql.com',
+      'https://explorer.apollographql.com',
+    ];
+
+    if (apolloStudioOrigins.some(allowed => origin.startsWith(allowed))) {
+      logger.debug('CORS: Allowing Apollo Studio origin', { origin });
+      return callback(null, true);
+    }
+
+    // In development, allow all origins (localhost, 127.0.0.1, etc.)
+    if (NODE_ENV === 'development') {
+      logger.debug('CORS: Allowing origin in development', { origin });
+      return callback(null, true);
+    }
+
+    // In production, check against allowed origins
+    const allowedOrigins = [
+      ...(process.env.FRONTEND_URL ? [process.env.FRONTEND_URL] : []),
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      logger.warn('CORS: Origin not allowed', { origin, allowedOrigins });
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'apollographql-client-name',
+    'apollographql-client-version',
+  ],
+  exposedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
+};
+
 // Middleware
-app.use(cors());
+app.use(cors(corsOptions));
+// Explicit OPTIONS handler for preflight requests
+app.options('*', cors(corsOptions));
 app.use(express.json());
 
 const JWT_SECRET = process.env.JWT_SECRET || 'eco-swift-secret-key-2024';
