@@ -78,6 +78,16 @@ const corsOptions: cors.CorsOptions = {
   optionsSuccessStatus: 200, // Some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
+// Health check endpoint (before CORS to allow easy debugging)
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: NODE_ENV,
+    vercel: isVercel,
+  });
+});
+
 // Middleware
 app.use(cors(corsOptions));
 // Explicit OPTIONS handler for preflight requests
@@ -141,8 +151,8 @@ export const startServer = async () => {
       resolvers,
     });
 
-    // Create HTTP server
-    const httpServer = createServer(app);
+    // Create HTTP server (only needed for WebSocket subscriptions, not for Vercel)
+    const httpServer: ReturnType<typeof createServer> | null = isVercel ? null : createServer(app);
 
     // Create Apollo Server with subscription support
     const server = new ApolloServer({
@@ -211,7 +221,8 @@ export const startServer = async () => {
         };
       },
       plugins: [
-        ApolloServerPluginDrainHttpServer({ httpServer }),
+        // Only use drain plugin when not on Vercel (Vercel doesn't use httpServer.listen)
+        ...(isVercel || !httpServer ? [] : [ApolloServerPluginDrainHttpServer({ httpServer })]),
         {
           async serverWillStart() {
             return {
@@ -228,7 +239,7 @@ export const startServer = async () => {
 
     await server.start();
 
-    if (!isVercel) {
+    if (!isVercel && httpServer) {
       // WebSocket server cleanup
       const wsServer = new WebSocketServer({
         server: httpServer,
@@ -257,7 +268,7 @@ export const startServer = async () => {
     server.applyMiddleware({ app, path: '/graphql' });
 
     const PORT = process.env.PORT || 4000;
-    if (!isVercel) {
+    if (!isVercel && httpServer) {
       httpServer.listen(PORT, () => {
         logger.info(`Server ready at http://localhost:${PORT}${server.graphqlPath}`);
         logger.info(`Subscriptions ready at ws://localhost:${PORT}${server.graphqlPath}`);
