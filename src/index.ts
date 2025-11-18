@@ -5,7 +5,7 @@ import { WebSocketServer } from 'ws';
 import { useServer } from 'graphql-ws/use/ws';
 import { execute, subscribe } from 'graphql';
 import { makeExecutableSchema } from '@graphql-tools/schema';
-import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageGraphQLPlayground } from 'apollo-server-core';
+import { ApolloServerPluginDrainHttpServer, ApolloServerPluginLandingPageLocalDefault } from 'apollo-server-core';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import jwt from 'jsonwebtoken';
@@ -194,12 +194,12 @@ export const startServer = async () => {
     // Create Apollo Server with subscription support
     const server = new ApolloServer({
       schema,
-      introspection: true, // Enable GraphQL introspection (required for GraphQL Playground)
+      introspection: true, // Enable GraphQL introspection (required for Apollo Studio)
       plugins: [
         // Only use drain plugin when not on Vercel (Vercel doesn't use httpServer.listen)
         ...(isVercel || !httpServer ? [] : [ApolloServerPluginDrainHttpServer({ httpServer })]),
-        // Enable GraphQL Playground
-        ApolloServerPluginLandingPageGraphQLPlayground(),
+        // Enable Apollo Studio landing page
+        ApolloServerPluginLandingPageLocalDefault({ embed: true }),
         {
           async serverWillStart() {
             return {
