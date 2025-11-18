@@ -2,11 +2,11 @@
   "name": "eco-swift-backend",
   "version": "1.0.0",
   "description": "Eco Swift E-commerce Backend",
-  "main": "dist/index.js",
+  "main": "public/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js",
+    "start": "node public/index.js",
     "codegen": "graphql-codegen --config codegen.yml",
     "codegen:watch": "graphql-codegen --config codegen.yml --watch",
     "seed:admin": "ts-node --transpile-only src/scripts/seedAdmin.ts",

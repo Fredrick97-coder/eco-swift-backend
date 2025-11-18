@@ -1,4 +1,4 @@
-import { app, startServer } from '../dist/index.js';
+import { app, startServer } from '../public/index.js';
 
 let serverReadyPromise: Promise<void> | null = null;
 

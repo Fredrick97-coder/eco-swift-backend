@@ -13,7 +13,7 @@ This guide mirrors the deployment workflow used in the `sanctum/backend` project
 ## 2. Build Configuration (`vercel.json`)
 
 - **Build Command**: `npm install && npm run build`
-- **Functions**: bundles everything in `dist/**` with the serverless function
+- **Functions**: bundles everything in `public/**` with the serverless function
 - **Rewrites**: `/(.*)` → `/api` so GraphQL & REST endpoints share the same base URL
 
 ## 3. Server Initialisation Changes
