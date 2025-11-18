@@ -60,21 +60,23 @@ const corsOptions: cors.CorsOptions = {
       allowedOrigins.push(process.env.FRONTEND_URL);
     }
     
-    // Allow the backend's own origin (for same-origin requests, GraphQL playground, etc.)
-    if (process.env.VERCEL_URL) {
-      allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
-    }
+    // On Vercel, allow all vercel.app subdomains (deployment URLs, production URLs, etc.)
     if (process.env.VERCEL) {
-      // Allow any vercel.app subdomain for the same project
-      const vercelUrl = process.env.VERCEL_URL || '';
-      if (vercelUrl) {
-        allowedOrigins.push(`https://${vercelUrl}`);
+      // Allow any *.vercel.app origin (covers all deployment and production URLs)
+      if (origin.endsWith('.vercel.app')) {
+        logger.debug('CORS: Allowing Vercel origin', { origin });
+        return callback(null, true);
+      }
+      
+      // Also add specific VERCEL_URL if available
+      if (process.env.VERCEL_URL) {
+        allowedOrigins.push(`https://${process.env.VERCEL_URL}`);
       }
     }
 
-    // If no FRONTEND_URL is set in production, log a warning but allow the request
+    // If no FRONTEND_URL is set in production and not on Vercel, log a warning but allow the request
     // (This is less secure but prevents blocking when env vars aren't configured)
-    if (allowedOrigins.length === 0) {
+    if (allowedOrigins.length === 0 && !process.env.VERCEL) {
       logger.warn('CORS: FRONTEND_URL not set, allowing all origins (not recommended for production)', { origin });
       return callback(null, true);
     }
@@ -82,7 +84,7 @@ const corsOptions: cors.CorsOptions = {
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      logger.warn('CORS: Origin not allowed', { origin, allowedOrigins });
+      logger.warn('CORS: Origin not allowed', { origin, allowedOrigins, isVercel: !!process.env.VERCEL });
       callback(new Error('Not allowed by CORS'));
     }
   },
