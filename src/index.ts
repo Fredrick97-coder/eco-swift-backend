@@ -46,6 +46,19 @@ const corsOptions: cors.CorsOptions = {
       return callback(null, true);
     }
 
+    // Always allow localhost origins (for local development)
+    const localhostOrigins = [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5173', // Vite default
+      'http://127.0.0.1:5173',
+    ];
+
+    if (localhostOrigins.includes(origin)) {
+      logger.debug('CORS: Allowing localhost origin', { origin });
+      return callback(null, true);
+    }
+
     // In development, allow all origins (localhost, 127.0.0.1, etc.)
     if (NODE_ENV === 'development') {
       logger.debug('CORS: Allowing origin in development', { origin });
