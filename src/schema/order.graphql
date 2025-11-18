@@ -1,0 +1,70 @@
+# Order Types
+type Order {
+  id: ID!
+  orderNumber: String!
+  customer: User!
+  items: [OrderItem!]!
+  total: Float!
+  status: OrderStatus!
+  shippingAddress: Address!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type OrderItem {
+  id: ID!
+  product: Product!
+  quantity: Int!
+  price: Float!
+  size: String
+  color: String
+}
+
+type Address {
+  street: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+input OrderItemInput {
+  productId: ID!
+  quantity: Int!
+  price: Float!
+  size: String
+  color: String
+}
+
+input AddressInput {
+  street: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+input CreateOrderInput {
+  items: [OrderItemInput!]!
+  shippingAddress: AddressInput!
+}
+
+extend type Query {
+  orders(vendorId: ID, customerId: ID, status: OrderStatus, limit: Int, offset: Int): [Order!]!
+  order(id: ID!): Order
+  myOrders(status: OrderStatus, limit: Int, offset: Int): [Order!]!
+}
+
+extend type Mutation {
+  createOrder(input: CreateOrderInput!): Order!
+  updateOrderStatus(id: ID!, status: OrderStatus!): Order!
+}
+

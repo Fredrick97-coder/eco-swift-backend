@@ -1,0 +1,29 @@
+type Review {
+  id: ID!
+  product: Product!
+  user: User!
+  order: Order!
+  rating: Int! # 1-5
+  comment: String
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+input CreateReviewInput {
+  productId: ID!
+  orderId: ID!
+  rating: Int! # 1-5
+  comment: String
+}
+
+extend type Query {
+  reviews(productId: ID, userId: ID, limit: Int, offset: Int): [Review!]!
+  review(id: ID!): Review
+}
+
+extend type Mutation {
+  createReview(input: CreateReviewInput!): Review!
+  updateReview(id: ID!, rating: Int, comment: String): Review!
+  deleteReview(id: ID!): Boolean!
+}
+

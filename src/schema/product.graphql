@@ -1,0 +1,105 @@
+type Product {
+  id: ID!
+  name: String!
+  description: String
+  price: Float!
+  originalPrice: Float
+  currency: String!
+  images: [String!]!
+  category: Category!
+  vendor: User!
+  stock: Int!
+  sku: String!
+  sizes: [String!]!
+  colors: [ProductColor!]!
+  badge: String
+  rating: Float
+  reviewCount: Int!
+  features: [String!]!
+  isFeatured: Boolean!
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type ProductColor {
+  name: String!
+  value: String! # Hex color code
+}
+
+type Category {
+  id: ID!
+  name: String!
+  slug: String!
+  description: String
+  products: [Product!]!
+}
+
+input ProductInput {
+  name: String!
+  description: String
+  price: Float!
+  originalPrice: Float
+  currency: String!
+  images: [String!]!
+  categoryId: ID!
+  stock: Int!
+  sku: String!
+  sizes: [String!]
+  colors: [ProductColorInput!]
+  badge: String
+  features: [String!]
+  isFeatured: Boolean
+}
+
+input ProductColorInput {
+  name: String!
+  value: String!
+}
+
+input ProductUpdateInput {
+  name: String
+  description: String
+  price: Float
+  originalPrice: Float
+  currency: String
+  images: [String!]
+  categoryId: ID
+  stock: Int
+  sku: String
+  sizes: [String!]
+  colors: [ProductColorInput!]
+  badge: String
+  features: [String!]
+  isFeatured: Boolean
+}
+
+extend type Query {
+  products(limit: Int, offset: Int, categoryId: ID, featured: Boolean, vendorId: ID, search: String): [Product!]!
+  product(id: ID!): Product
+  categories: [Category!]!
+  category(id: ID!): Category
+  categoryBySlug(slug: String!): Category
+  relatedProducts(productId: ID!, limit: Int): [Product!]!
+}
+
+input CategoryInput {
+  name: String!
+  slug: String!
+  description: String
+}
+
+input CategoryUpdateInput {
+  name: String
+  slug: String
+  description: String
+}
+
+extend type Mutation {
+  createProduct(input: ProductInput!): Product!
+  updateProduct(id: ID!, input: ProductUpdateInput!): Product!
+  deleteProduct(id: ID!): Boolean!
+  createCategory(input: CategoryInput!): Category!
+  updateCategory(id: ID!, input: CategoryUpdateInput!): Category!
+  deleteCategory(id: ID!): Boolean!
+}
+

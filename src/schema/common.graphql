@@ -1,0 +1,16 @@
+# Common types and scalars
+
+scalar Date
+scalar JSON
+
+type Query {
+  _empty: String
+}
+
+type Mutation {
+  _empty: String
+}
+
+type Subscription {
+  _empty: String
+}

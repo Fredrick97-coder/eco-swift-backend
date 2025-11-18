@@ -1,0 +1,75 @@
+# User and Authentication Types
+
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  role: UserRole!
+  avatar: String
+  phone: String
+  address: Address
+  products: [Product!]! # Products created by vendor
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type Address {
+  street: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+enum UserRole {
+  BUYER
+  VENDOR
+  ADMIN
+}
+
+input RegisterInput {
+  name: String!
+  email: String!
+  password: String!
+  role: UserRole!
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+input UpdateUserInput {
+  name: String
+  email: String
+  phone: String
+  address: AddressInput
+  avatar: String
+}
+
+input AddressInput {
+  street: String!
+  city: String!
+  state: String!
+  zipCode: String!
+  country: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+extend type Query {
+  me: User
+  user(id: ID!): User
+  users(limit: Int, offset: Int): [User!]!
+}
+
+extend type Mutation {
+  register(input: RegisterInput!): AuthPayload!
+  login(input: LoginInput!): AuthPayload!
+  updateUser(input: UpdateUserInput!): User!
+  changePassword(oldPassword: String!, newPassword: String!): Boolean!
+  logout: Boolean!
+}

@@ -1,0 +1,80 @@
+# Subscription Types
+
+type Subscription {
+  # Order subscriptions
+  orderCreated(vendorId: ID, customerId: ID): Order!
+  orderUpdated(orderId: ID): Order!
+  orderStatusChanged(vendorId: ID, customerId: ID): OrderStatusUpdate!
+  
+  # Product subscriptions
+  productCreated(vendorId: ID): Product!
+  productUpdated(vendorId: ID): Product!
+  productDeleted(vendorId: ID): ProductDeleted!
+  
+  # Notification subscriptions
+  notificationAdded(userId: ID!): Notification!
+}
+
+type Order {
+  id: ID!
+  orderNumber: String!
+  customer: User!
+  items: [OrderItem!]!
+  total: Float!
+  status: OrderStatus!
+  shippingAddress: Address
+  createdAt: Date!
+  updatedAt: Date!
+}
+
+type OrderItem {
+  id: ID!
+  product: Product!
+  quantity: Int!
+  price: Float!
+  size: String
+  color: String
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+type OrderStatusUpdate {
+  orderId: ID!
+  orderNumber: String!
+  oldStatus: OrderStatus!
+  newStatus: OrderStatus!
+  updatedAt: Date!
+}
+
+type ProductDeleted {
+  id: ID!
+  name: String!
+  deletedAt: Date!
+}
+
+type Notification {
+  id: ID!
+  userId: ID!
+  type: NotificationType!
+  title: String!
+  message: String!
+  read: Boolean!
+  link: String
+  createdAt: Date!
+}
+
+enum NotificationType {
+  ORDER_CREATED
+  ORDER_UPDATED
+  ORDER_CANCELLED
+  PRODUCT_LOW_STOCK
+  NEW_MESSAGE
+  SYSTEM_ALERT
+}
+
